@@ -103,7 +103,7 @@ class RNN(torch.nn.Module):
         super().__init__()
 
         self.model = torch.nn.LSTM(
-            input_size=512,
+            input_size=256,
             hidden_size=256,
             num_layers=2,
             bidirectional=True,
@@ -120,6 +120,10 @@ class CRNN(torch.nn.Module):
 
         self.cnn = CNN()
 
+        self.map_to_sequence = torch.nn.Linear(
+            in_features=512, out_features=256,
+        )
+
         self.rnn = RNN()
 
         fc_in_features = self.rnn.model.hidden_size
@@ -131,7 +135,7 @@ class CRNN(torch.nn.Module):
         )
 
         self.model = torch.nn.Sequential(
-            self.cnn, self.rnn, self.fc,
+            self.cnn, self.map_to_sequence, self.rnn, self.fc,
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
