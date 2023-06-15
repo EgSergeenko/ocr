@@ -1,3 +1,6 @@
+import random
+
+import numpy as np
 import torch
 from torch.utils.data import DataLoader, Dataset
 
@@ -56,3 +59,30 @@ def get_dataloader(
         pin_memory=True,
         num_workers=num_workers,
     )
+
+
+@torch.no_grad()
+def inference(
+    model: torch.nn.Module,
+    dataset: Dataset,
+    decoder: Decoder,
+    device: torch.device,
+) -> tuple[np.ndarray, str, str]:
+    model.eval()
+
+    sample_idx = random.randint(0, len(dataset) - 1)
+    sample = dataset[sample_idx]
+    image, label, x_length, y_length = sample
+
+    x, y = torch.Tensor(image).unsqueeze(0).to(device), torch.Tensor(label)
+    x_length, y_length = torch.LongTensor([x_length]), torch.LongTensor([y_length])
+
+    output = torch.nn.functional.log_softmax(model(x), dim=2)
+    prediction = output.argmax(dim=2)
+
+    y_pred, y_true = decoder.decode_sample(
+        (prediction.squeeze(), y, x_length, y_length),
+    )
+
+    return image.squeeze(), y_pred, y_true
+
