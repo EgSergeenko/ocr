@@ -95,7 +95,7 @@ class CNN(torch.nn.Module):
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.model(x).squeeze().permute(0, 2, 1)
+        return self.model(x).squeeze(2).permute(0, 2, 1)
 
 
 class RNN(torch.nn.Module):
